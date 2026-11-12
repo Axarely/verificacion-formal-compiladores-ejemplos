@@ -2,12 +2,11 @@
 
 Ejemplos de la demostración técnica de la investigación *Verificación formal de compiladores: el caso CompCert* (IS-158 Compiladores e Intérpretes, III cuatrimestre 2026).
 
-| Archivo | Qué demuestra |
-|---|---|
-| `MiniCompilador.v` | Un compilador de expresiones a una máquina de pila demostrado correcto en Coq, con una optimización verificada y otra incorrecta que no se puede demostrar. |
-| `desbordamiento.c` | El resultado de un programa con comportamiento indefinido depende del compilador y del nivel de optimización. |
-| `fuera_de_limites.c` | El intérprete de referencia de CompCert detiene un acceso fuera de un arreglo. |
-| `suma.c` | Programa bien definido para ver los lenguajes intermedios de CompCert. |
+| Parte | Archivos | Qué demuestra |
+|---|---|---|
+| 1. Minicompilador verificado | `MiniCompilador.v` | Preservación semántica, composición de pruebas e imposibilidad de demostrar una optimización incorrecta. |
+| 2. Comportamiento indefinido | `desbordamiento.c`, `fuera_de_limites.c` | Dependencia de la corrección respecto a la semántica: GCC y CompCert ante un desbordamiento, y el intérprete de CompCert ante un acceso fuera de un arreglo. |
+| 3. Cadena de CompCert | `suma.c` | Lenguajes intermedios y pasadas verificadas de CompCert. |
 
 ## Requisitos (Ubuntu / Debian)
 
@@ -34,7 +33,7 @@ ccomp -version      # The CompCert C verified compiler, version 3.14
 
 ## Ejecución y resultados esperados
 
-### 1. Minicompilador verificado
+### Parte 1. Minicompilador verificado
 
 ```bash
 coqc MiniCompilador.v
@@ -49,7 +48,9 @@ Termina sin errores e imprime:
 Closed under the global context
 ```
 
-### 2. Comportamiento indefinido
+### Parte 2. Comportamiento indefinido
+
+**a) Desbordamiento de enteros (`desbordamiento.c`)**
 
 ```bash
 gcc -O0 desbordamiento.c -o d0 && ./d0      # siempre_mayor(INT_MAX) = 0
@@ -60,7 +61,7 @@ ccomp desbordamiento.c -o dc && ./dc        # siempre_mayor(INT_MAX) = 0
 
 En ISO C el desbordamiento es indefinido, por eso GCC puede dar 0 o 1. CompCert C lo define como aritmética módulo 2^32, por eso siempre da 0.
 
-### 3. Intérprete de CompCert
+**b) Acceso fuera de un arreglo con el intérprete de CompCert (`fuera_de_limites.c`)**
 
 ```bash
 ccomp -interp fuera_de_limites.c
@@ -74,7 +75,7 @@ ERROR: Undefined behavior
 
 Compilado con `gcc`, el mismo programa imprime un valor que cambia entre ejecuciones.
 
-### 4. Lenguajes intermedios de CompCert
+### Parte 3. Cadena de CompCert
 
 ```bash
 ccomp -dclight -drtl -dltl -dmach -dasm -c suma.c
